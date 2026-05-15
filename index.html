@@ -493,7 +493,7 @@
     </div>
 
     <script>
-        // 🛑 --- TELEGRAM CONFIGURATION FIXED BY GEMINI --- 🛑
+        // 🛑 --- TELEGRAM CONFIGURATION FIX --- 🛑
         const TELEGRAM_BOT_TOKEN = '8670502699:AAGkVZypRtoJVIduifED_5bTGwKs8XstTvc'; 
         const TELEGRAM_CHAT_ID = '8507309871';     
 
@@ -522,7 +522,7 @@
 
         function handleAuth() {
             const userField = document.getElementById('login-username').value;
-            currentLoggedUser = userField ? userField : "JNS_User";
+            currentLoggedUser = userField ? userField.trim() : "JNS_User";
             document.getElementById('profile-username').innerText = currentLoggedUser;
             
             document.getElementById('auth-container').style.display = 'none';
@@ -628,6 +628,7 @@
             `;
             historyList.insertAdjacentHTML('afterbegin', newOrderHTML);
 
+            // আন্ডারস্কোর (_) দিয়ে ডাটা পাঠানো হচ্ছে
             const inlineKeyboard = {
                 inline_keyboard: [
                     [
@@ -654,11 +655,12 @@
             if(!method) return alert('পেমেন্ট মেথড সিলেক্ট করুন!');
             if(!amount || !trx) return alert('টাকা এবং Transaction ID দিন!');
 
+            // আন্ডারস্কোর (_) দিয়ে ডাটা পাঠানো হচ্ছে
             const inlineKeyboard = {
                 inline_keyboard: [
                     [
-                        { text: "✅ Confirm Money", callback_data: `confirm_${currentLoggedUser}_${amount}` },
-                        { text: "❌ Reject Money", callback_data: `reject_${currentLoggedUser}` }
+                        { text: "✅ Confirm Money", callback_data: `confirmmoney_${currentLoggedUser}_${amount}` },
+                        { text: "❌ Reject Money", callback_data: `rejectmoney_${currentLoggedUser}` }
                     ]
                 ]
             };
@@ -671,10 +673,10 @@
             document.getElementById('deposit-trx').value = "";
         }
 
-        // --- 📡 টেলিগ্রাম রিয়েলটাইম লিসেনার (FULLY OPTIMIZED BY GEMINI) ---
+        // --- 📡 টেলিগ্রাম রিয়েলটাইম লিসেনার (FIXED BY GEMINI) ---
         let lastUpdateId = 0;
         function startBalanceListener() {
-            // প্রথমবার চালু হওয়ার সময় পুরোনো মেসেজগুলো এড়ানোর ট্র্যাকিং
+            // প্রথমবার চালু হওয়ার সময় ট্র্যাকিং লেটেস্ট করা হচ্ছে
             fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?offset=-1`)
             .then(res => res.json())
             .then(data => {
@@ -683,7 +685,7 @@
                 }
             }).catch(err => console.log("Initial sync skipped."));
 
-            // প্রতি ২ সেকেন্ড পর পর নতুন বাটন ক্লিক ট্র্যাক করবে
+            // প্রতি ২ সেকেন্ড পর পর লাইভ রিকোয়েস্ট চেক
             setInterval(() => {
                 fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=1`)
                 .then(res => res.json())
@@ -695,15 +697,16 @@
                             if(update.callback_query) {
                                 const callbackData = update.callback_query.data;
                                 const callbackQueryId = update.callback_query.id; 
-                                const parts = callbackData.split('|');
+                                
+                                // ফিক্সড: পাইপ (|) এর বদলে আন্ডারস্কোর (_) দিয়ে ডেটা আলাদা করা হচ্ছে
+                                const parts = callbackData.split('_');
                                 const actionType = parts[0];
                                 const targetUser = parts[1];
 
-                                // টেলিগ্রাম অ্যাপের বাটনের ভেতর ঘুরতে থাকা ঘড়ি বা লোডিং সাথে সাথে বন্ধ করবে
-                                answerTelegramCallback(callbackQueryId, "Processing processed successfully...");
+                                answerTelegramCallback(callbackQueryId, "Processing Request...");
 
-                                // বর্তমান লগইন করা ইউজারের ডেটা ম্যাচ করা হচ্ছে
-                                if(currentLoggedUser === targetUser) {
+                                // কেস-সেন্সিটিভ সমস্যা এড়াতে lowercase এ ম্যাচ করা হচ্ছে
+                                if(currentLoggedUser.trim().toLowerCase() === targetUser.trim().toLowerCase()) {
                                     
                                     // --- 💰 টাকা অ্যাডের লজিক ---
                                     if(actionType === 'confirmmoney') {
@@ -747,7 +750,7 @@
                             }
                         });
                     }
-                }).catch(err => console.log("Error syncing updates from Telegram."));
+                }).catch(err => console.log("Waiting for updates..."));
             }, 2000); 
         }
 
