@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JNS Digital | Ultimate Experience</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Syncopate:wght@700&display=swap');
+        
+        :root {
+            --primary: #bc13fe;
+            --secondary: #ff00bd;
+            --dark-bg: #070709;
+            --glass-card: rgba(255, 255, 255, 0.03);
+            --neon-glow: 0 0 25px rgba(188, 19, 254, 0.4);
+            --success: #00ffa3;
+            --input-bg: rgba(255, 255, 255, 0.05);
+        }
+
+        /* --- LOADING SYSTEM --- */
+        #loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #030305;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+        .loader-universe {
+            position: relative;
+            width: 140px;
+            height: 140px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .ring-outer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            border-top-color: var(--primary);
+            border-bottom-color: var(--secondary);
+            border-radius: 50%;
+            filter: drop-shadow(0 0 12px var(--primary));
+            animation: spinClockwise 2.5s linear infinite;
+        }
+        .ring-middle {
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            border: 3px solid transparent;
+            border-left-color: var(--success);
+            border-right-color: rgba(255, 0, 189, 0.5);
+            border-radius: 50%;
+            filter: drop-shadow(0 0 10px var(--success));
+            animation: spinCounterClockwise 1.8s linear infinite;
+        }
+        .ring-inner {
+            position: absolute;
+            width: 60%;
+            height: 60%;
+            border: 2px dashed rgba(188, 19, 254, 0.6);
+            border-radius: 50%;
+            animation: spinClockwise 4s linear infinite;
+        }
+        .loader-core {
+            width: 12px;
+            height: 12px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 20px 6px var(--primary), 0 0 40px 12px var(--secondary);
+            animation: corePulse 1.2s ease-in-out infinite alternate;
+        }
+        .loader-text-wrapper {
+            text-align: center;
+            margin-top: 35px;
+        }
+        .loader-text {
+            font-family: 'Syncopate', sans-serif;
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 5px;
+            margin: 0;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.4), 0 0 20px var(--primary);
+            animation: glowBlink 2s ease-in-out infinite;
+        }
+        .loader-subtext {
+            font-size: 9px;
+            font-weight: 600;
+            color: #555;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+
+        @keyframes spinClockwise { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        @keyframes spinCounterClockwise { 0% { transform: rotate(0deg); } 100% { transform: rotate(-360deg); } }
+        @keyframes corePulse { 0% { transform: scale(0.8); opacity: 0.7; } 100% { transform: scale(1.2); opacity: 1; } }
+        @keyframes glowBlink { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; filter: brightness(1.3); } }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--dark-bg);
+            color: #fff;
+            margin: 0;
+            padding-bottom: 110px;
+            overflow-x: hidden;
+            background-image: radial-gradient(circle at 10% 20%, rgba(188, 19, 254, 0.05) 0%, transparent 50%), radial-gradient(circle at 90% 80%, rgba(255, 0, 189, 0.05) 0%, transparent 50%);
+        }
+        .premium-status-bar {
+            background: linear-gradient(90deg, #1a1a1a, #2d0b4d);
+            border-bottom: 1px solid var(--primary);
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+        .status-left { display: flex; align-items: center; gap: 8px; }
+        .status-left i { color: gold; text-shadow: 0 0 10px rgba(255, 215, 0, 0.5); }
+        .status-right { background: rgba(188, 19, 254, 0.15); color: var(--primary); padding: 4px 10px; border-radius: 8px; font-weight: 800; border: 1px solid rgba(188, 19, 254, 0.3); }
+        
+        #auth-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--dark-bg); z-index: 10000;
+            display: flex; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box;
+        }
+        .auth-box {
+            background: rgba(255, 255, 255, 0.02); padding: 30px; border-radius: 35px;
+            border: 1px solid rgba(188, 19, 254, 0.3); width: 100%; max-width: 400px;
+            backdrop-filter: blur(20px); text-align: center; box-shadow: var(--neon-glow);
+        }
+        .auth-box h2 { font-weight: 800; margin-bottom: 10px; font-size: 28px; }
+        .auth-box h2 span { color: var(--primary); }
+        .auth-box p { color: #888; font-size: 14px; margin-bottom: 25px; }
+        .auth-toggle { margin-top: 20px; font-size: 13px; color: #666; }
+        .auth-toggle span { color: var(--primary); cursor: pointer; font-weight: 800; }
+
+        .header {
+            background: rgba(7, 7, 9, 0.85); backdrop-filter: blur(20px);
+            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+            position: sticky; top: 0; z-index: 1000; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .logo { font-size: 22px; font-weight: 800; letter-spacing: 1px; color: #fff; }
+        .logo span { color: var(--primary); text-shadow: var(--neon-glow); }
+        .wallet-chip { background: var(--glass-card); border: 1px solid var(--primary); padding: 7px 18px; border-radius: 50px; font-size: 13px; font-weight: 800; box-shadow: var(--neon-glow); cursor: pointer; }
+        
+        .hero-stats { margin: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .stat-card { background: var(--glass-card); border-radius: 25px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); text-align: center; backdrop-filter: blur(10px); transition: 0.3s; }
+        .stat-card i { font-size: 24px; background: linear-gradient(var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
+        .stat-card h4 { margin: 0; font-size: 20px; }
+        .stat-card p { margin: 5px 0 0; font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+
+        .promo-slider { margin: 0 20px 20px; padding: 25px; border-radius: 30px; background: linear-gradient(135deg, #121212, #1a0b2e); border: 1px solid rgba(188, 19, 254, 0.2); position: relative; overflow: hidden; }
+        .promo-slider h2 { font-size: 18px; margin: 0; color: var(--success); }
+        .promo-slider p { font-size: 12px; opacity: 0.7; margin: 5px 0 15px; }
+        .promo-btn { background: var(--primary); color: #fff; border: none; padding: 8px 18px; border-radius: 12px; font-size: 12px; font-weight: 800; cursor: pointer; }
+
+        .category-tabs { display: flex; gap: 12px; overflow-x: auto; padding: 0 20px 20px; scrollbar-width: none; }
+        .tab { padding: 10px 22px; background: var(--glass-card); border-radius: 50px; font-size: 12px; font-weight: 600; border: 1px solid rgba(255,255,255,0.05); white-space: nowrap; color: #888; cursor: pointer; }
+        .tab.active { background: var(--primary); color: #fff; box-shadow: var(--neon-glow); border-color: var(--primary); }
+
+        .page { display: none; padding: 0 20px; animation: slideUp 0.4s ease-out; }
+        .page.active { display: block; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .service-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+        .card { background: var(--glass-card); border-radius: 25px; padding: 20px 10px; text-align: center; border: 1px solid rgba(255,255,255,0.03); transition: 0.3s; cursor: pointer; }
+        .card:active { transform: scale(0.95); background: rgba(188, 19, 254, 0.1); }
+        .icon-box { width: 50px; height: 50px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
+        .icon-box img { width: 100%; object-fit: contain; }
+        .card span { font-size: 10px; font-weight: 800; color: #bbb; text-transform: uppercase; }
+
+        .section-title { font-size: 16px; margin: 25px 0 15px; font-weight: 600; text-align: center; color: #eee; }
+        .faq-container { background: var(--glass-card); border-radius: 25px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
+        .faq-container i { color: var(--primary); font-size: 12px; }
+        .faq-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 13px; }
+        .faq-item:last-child { border-bottom: none; }
+
+        .payment-copy-box { background: var(--glass-card); padding: 20px; border-radius: 25px; margin-top: 15px; border: 1px dashed var(--primary); text-align: center; }
+        .copy-label { font-size: 12px; color: #888; margin-bottom: 8px; display: block; }
+        .copy-flex { display: flex; align-items: center; justify-content: center; gap: 10px; background: rgba(255,255,255,0.03); padding: 10px; border-radius: 15px; }
+        .copy-flex b { font-size: 16px; letter-spacing: 1px; color: #fff; }
+        .copy-mini-btn { background: var(--primary); color: #fff; padding: 6px 14px; border-radius: 10px; font-size: 11px; font-weight: 800; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+
+        .instruction-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 15px; margin-bottom: 20px; }
+        .step-item { text-align: center; }
+        .step-circle { width: 35px; height: 35px; background: var(--primary); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-weight: 800; font-size: 14px; box-shadow: var(--neon-glow); }
+        .step-item p { font-size: 11px; color: #aaa; margin: 0; }
+
+        .about-card { background: var(--glass-card); border-radius: 25px; padding: 20px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.05); text-align: left; }
+        .about-card h3 { color: var(--primary); font-size: 18px; margin-bottom: 10px; }
+        .about-card p { font-size: 13px; color: #aaa; line-height: 1.6; }
+        .trust-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .trust-grid i { color: var(--success); font-size: 18px; margin-bottom: 5px; display: block; }
+        .trust-item b { font-size: 11px; color: #fff; }
+
+        .wallet-card-premium { background: linear-gradient(135deg, var(--primary), var(--secondary)); padding: 30px 20px; border-radius: 30px; margin-top: 10px; text-align: center; box-shadow: var(--neon-glow); position: relative; overflow: hidden; }
+        .wallet-card-premium h1 { font-size: 36px; margin: 10px 0; }
+        .wallet-card-premium p { font-size: 11px; text-transform: uppercase; letter-spacing: 2px; opacity: 0.8; }
+
+        .method-card { background: var(--glass-card); padding: 15px; border-radius: 20px; margin-top: 15px; display: flex; align-items: center; justify-content: space-between; border: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
+        .method-card img { width: 45px; height: 45px; border-radius: 12px; background: #fff; padding: 5px; }
+        .method-card b { font-size: 14px; color: #fff; }
+        .method-card span { font-size: 11px; color: #888; display: block; margin-top: 2px; }
+        .copy-btn { background: rgba(188, 19, 254, 0.2); color: var(--primary); border: 1px solid var(--primary); padding: 5px 12px; border-radius: 10px; font-size: 10px; font-weight: 800; cursor: pointer; }
+
+        .premium-input { width: 100%; padding: 16px; background: var(--input-bg); border: 1px solid #222; border-radius: 18px; color: #fff; margin-top: 12px; outline: none; box-sizing: border-box; font-size: 14px; transition: 0.3s; }
+        .premium-input:focus { border-color: var(--primary); background: rgba(255,255,255,0.08); }
+        .premium-select { width: 100%; padding: 16px; background: var(--input-bg); border: 1px solid #222; border-radius: 18px; color: #fff; margin-top: 12px; outline: none; box-sizing: border-box; font-size: 14px; cursor: pointer; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 15px center; background-size: 18px; }
+        .premium-select option { background: #111; color: #fff; }
+        .confirm-btn { width: 100%; padding: 16px; background: var(--primary); color: #fff; border: none; border-radius: 18px; margin-top: 20px; font-weight: 800; box-shadow: var(--neon-glow); cursor: pointer; transition: 0.3s; }
+
+        .list-item { background: var(--glass-card); padding: 18px; border-radius: 22px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid var(--primary); }
+        .list-item b { font-size: 15px; color: #fff; }
+        .buy-btn { background: var(--primary); border: none; padding: 8px 18px; border-radius: 10px; color: #fff; font-size: 12px; font-weight: bold; cursor: pointer; }
+
+        .profile-header { text-align: center; padding: 20px 0; }
+        .avatar { width: 80px; height: 80px; background: var(--primary); border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 4px solid rgba(255,255,255,0.1); }
+
+        .navbar { position: fixed; bottom: 20px; left: 20px; right: 20px; background: rgba(10, 10, 12, 0.95); backdrop-filter: blur(25px); height: 75px; border-radius: 30px; display: flex; justify-content: space-around; align-items: center; border: 1px solid rgba(255,255,255,0.08); z-index: 1000; }
+        .nav-item { color: #555; text-decoration: none; text-align: center; transition: 0.3s; }
+        .nav-item i { font-size: 22px; display: block; margin-bottom: 4px; }
+        .nav-item span { font-size: 10px; font-weight: 700; }
+        .nav-item.active { color: var(--primary); text-shadow: var(--neon-glow); }
+
+        .float-btns { position: fixed; bottom: 110px; right: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 998; }
+        .float-icon { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; color: #fff; text-decoration: none; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .bg-tg { background: #0088cc; }
+        .bg-wa { background: #25d366; }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); z-index: 5000; align-items: center; justify-content: center; }
+        .modal-box { background: #0f0f13; width: 85%; padding: 25px; border-radius: 30px; border: 1px solid var(--primary); box-shadow: var(--neon-glow); }
+        .modal-box h3 { margin: 0 0 20px; font-size: 18px; text-align: center; color: var(--primary); }
+
+        .live-ticker { position: fixed; bottom: 105px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 1px solid var(--primary); padding: 8px 20px; border-radius: 50px; font-size: 11px; display: flex; align-items: center; gap: 10px; z-index: 999; white-space: nowrap; animation: fadeIn 0.5s; }
+        .dot { width: 6px; height: 6px; background: var(--success); border-radius: 50%; box-shadow: 0 0 8px var(--success); }
+    </style>
+</head>
+<body>
+    <div id="loading-screen">
+        <div class="loader-universe">
+            <div class="ring-outer"></div>
+            <div class="ring-middle"></div>
+            <div class="ring-inner"></div>
+            <div class="loader-core"></div>
+        </div>
+        <div class="loader-text-wrapper">
+            <h2 class="loader-text">JNS DIGITAL</h2>
+            <div class="loader-subtext">Securing Connection...</div>
+        </div>
+    </div>
+
+    <div id="auth-container">
+        <div class="auth-box" id="login-form">
+            <h2>Welcome <span>Back</span></h2>
+            <p>Login to your account to continue</p>
+            <input type="text" class="premium-input" id="login-username" placeholder="Username or Email" value="JNS_User">
+            <input type="password" class="premium-input" id="login-pass" placeholder="Password" value="123456">
+            <button class="confirm-btn" onclick="handleAuth()">LOGIN NOW</button>
+            <div class="auth-toggle">Don't have an account? <span onclick="toggleAuth('signup')">Sign Up</span></div>
+        </div>
+        <div class="auth-box" id="signup-form" style="display:none;">
+            <h2>Create <span>Account</span></h2>
+            <p>Join JNS Digital for best services</p>
+            <input type="text" class="premium-input" id="signup-name" placeholder="Full Name">
+            <input type="email" class="premium-input" id="signup-email" placeholder="Email Address">
+            <input type="password" class="premium-input" id="signup-pass-field" placeholder="Password">
+            <button class="confirm-btn" onclick="handleAuth()">REGISTER</button>
+            <div class="auth-toggle">Already have an account? <span onclick="toggleAuth('login')">Login</span></div>
+        </div>
+    </div>
+
+    <div id="main-app" style="display:none;">
+        <div class="premium-status-bar">
+            <div class="status-left">
+                <i class="fa-solid fa-crown"></i>
+                <span>JNS Premium Member Active</span>
+            </div>
+            <div class="status-right">Verified</div>
+        </div>
+
+        <header class="header">
+            <div class="logo">JNS <span>DIGITAL</span></div>
+            <div class="wallet-chip" id="user-balance-chip" onclick="showPage('wallet')">৳ ০.০০</div>
+        </header>
+
+        <div class="float-btns">
+            <a href="https://wa.me/8801700000000" class="float-icon bg-wa" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="https://t.me/your_telegram_username" class="float-icon bg-tg" target="_blank"><i class="fa-brands fa-telegram"></i></a>
+        </div>
+
+        <div id="home" class="page active">
+            <div class="hero-stats">
+                <div class="stat-card">
+                    <i class="fa-solid fa-wallet"></i>
+                    <h4 id="user-balance-card">৳ ০.০০</h4>
+                    <p>Balance</p>
+                </div>
+                <div class="stat-card">
+                    <i class="fa-solid fa-crown"></i>
+                    <h4>Premium</h4>
+                    <p>Status</p>
+                </div>
+            </div>
+
+            <div class="promo-slider">
+                <h2>Special Discount!</h2>
+                <p>Get 10% extra on adding ৳৫০০ or more.</p>
+                <button class="promo-btn" onclick="showPage('wallet')">Add Now</button>
+            </div>
+
+            <div class="category-tabs">
+                <div class="tab active">Popular</div>
+                <div class="tab">Facebook</div>
+                <div class="tab">Others</div>
+            </div>
+
+            <div class="service-grid">
+                <div class="card" onclick="openDetails('fb')"><div class="icon-box"><img src="https://img.icons8.com/color/96/facebook-new.png"></div><span>Facebook</span></div>
+                <div class="card" onclick="openDetails('yt')"><div class="icon-box"><img src="https://img.icons8.com/color/96/youtube-play.png"></div><span>YouTube</span></div>
+                <div class="card" onclick="openDetails('tk')"><div class="icon-box"><img src="https://img.icons8.com/color/96/tiktok.png"></div><span>TikTok</span></div>
+                <div class="card" onclick="openDetails('cv')"><div class="icon-box"><img src="https://img.icons8.com/color/96/canva.png"></div><span>Canva Pro</span></div>
+                <div class="card" onclick="openDetails('ig')"><div class="icon-box"><img src="https://img.icons8.com/color/96/instagram-new.png"></div><span>Instagram</span></div>
+                <div class="card" onclick="openDetails('tg')"><div class="icon-box"><img src="https://img.icons8.com/color/96/telegram-app.png"></div><span>Telegram</span></div>
+                <div class="card" onclick="openDetails('nf')"><div class="icon-box"><img src="https://img.icons8.com/color/96/netflix.png"></div><span>Netflix</span></div>
+                <div class="card" onclick="openDetails('sp')"><div class="icon-box"><img src="https://img.icons8.com/color/96/spotify--v1.png"></div><span>Spotify</span></div>
+                <div class="card" onclick="openDetails('th')"><div class="icon-box"><img src="https://img.icons8.com/color/96/threads.png"></div><span>Threads</span></div>
+                <div class="card" onclick="openDetails('gm')"><div class="icon-box"><img src="https://img.icons8.com/color/96/google-logo.png"></div><span>Gmail Account</span></div>
+                <div class="card" onclick="openDetails('vp')"><div class="icon-box"><img src="https://img.icons8.com/color/96/shield.png"></div><span>VPN Premium</span></div>
+                <div class="card" onclick="openDetails('ed')"><div class="icon-box"><img src="https://img.icons8.com/color/96/education.png"></div><span>Edu Mail</span></div>
+            </div>
+
+            <div class="section-title">সাধারণ কিছু প্রশ্ন (FAQ)</div>
+            <div class="faq-container">
+                <div class="faq-item" onclick="alert('পেমেন্ট করার ৫-১০ মিনিটের মধ্যে ব্যালেন্স এড হয়ে যায়।')"><span>ব্যালেন্স এড হতে কতক্ষণ লাগে?</span><i class="fa-solid fa-chevron-down"></i></div>
+                <div class="faq-item" onclick="alert('অর্ডার দেওয়ার সাথে সাথেই কাজ শুরু হয়।')"><span>সার্ভিস কতক্ষণে শুরু হয়?</span><i class="fa-solid fa-chevron-down"></i></div>
+            </div>
+
+            <div class="payment-copy-box">
+                <span class="copy-label">আমাদের বিকাশ নম্বর (পার্সোনাল):</span>
+                <div class="copy-flex">
+                    <b>01700000000</b>
+                    <div class="copy-mini-btn" onclick="copyText('01700000000')"><i class="fa-solid fa-copy"></i> COPY</div>
+                </div>
+            </div>
+
+            <div class="section-title">কিভাবে সার্ভিস নিবেন?</div>
+            <div class="instruction-grid">
+                <div class="step-item"><div class="step-circle">১</div><p>টাকা এড করুন</p></div>
+                <div class="step-item"><div class="step-circle">২</div><p>সার্ভিস বাছুন</p></div>
+                <div class="step-item"><div class="step-circle">৩</div><p>অর্ডার দিন</p></div>
+            </div>
+        </div>
+
+        <div id="wallet" class="page">
+            <div class="wallet-card-premium">
+                <p>Available Balance</p>
+                <h1 id="user-balance-wallet">৳ ০.০০</h1>
+            </div>
+            <h3 style="margin: 20px 0 10px; font-size: 16px;">Payment Method</h3>
+            <div class="method-card">
+                <div class="method-detail">
+                    <img src="https://logolook.net/wp-content/uploads/2023/11/Bkash-Logo.png" style="width: 45px; height: 45px; border-radius: 12px; background: #fff; padding: 5px;">
+                    <div style="display: inline-block; vertical-align: top; margin-left: 10px;"><b>bKash Personal</b><span>01700000000</span></div>
+                </div>
+                <div class="copy-btn" onclick="copyText('01700000000')">COPY</div>
+            </div>
+            <div class="method-card">
+                <div class="method-detail">
+                    <img src="https://download.logo.wine/logo/Nagad/Nagad-Vertical-Logo.wine.png" style="width: 45px; height: 45px; border-radius: 12px; background: #fff; padding: 5px;">
+                    <div style="display: inline-block; vertical-align: top; margin-left: 10px;"><b>Nagad Personal</b><span>01900000000</span></div>
+                </div>
+                <div class="copy-btn" onclick="copyText('01900000000')">COPY</div>
+            </div>
+
+            <select id="deposit-method" class="premium-select">
+                <option value="" disabled selected>Select Payment Method</option>
+                <option value="bKash">bKash (Personal)</option> <option value="Nagad">Nagad (Personal)</option>
+            </select>
+            <input type="number" class="premium-input" id="deposit-amount" placeholder="Enter Amount (৳)">
+            <input type="text" class="premium-input" id="deposit-trx" placeholder="Enter Transaction ID">
+            <button class="confirm-btn" onclick="submitDeposit()">VERIFY & ADD MONEY</button>
+        </div>
+
+        <div id="history" class="page">
+            <h2 style="margin: 20px 0;">My Orders</h2>
+            <div id="order-history-list"></div>
+        </div>
+
+        <div id="user_profile" class="page">
+            <div class="profile-header">
+                <div class="avatar"><i class="fa-solid fa-user"></i></div>
+                <h2 id="profile-username">Premium User</h2>
+                <p style="color:#888; font-size:12px;">Active Member</p>
+            </div>
+            <div class="about-card">
+                <h3>About JNS Digital</h3>
+                <p>আমরা দীর্ঘ ৩ বছর ধরে সোশ্যাল মিডিয়া বুস্টিং এবং প্রিমিয়াম অ্যাকাউন্ট সার্ভিস প্রদান করছি।</p>
+                <div class="trust-grid">
+                    <div class="trust-item"><i class="fa-solid fa-shield-halved"></i><b>নিরাপদ পেমেন্ট</b></div>
+                    <div class="trust-item"><i class="fa-solid fa-bolt"></i><b>দ্রুত ডেলিভারি</b></div>
+                </div>
+            </div>
+            <button class="confirm-btn" onclick="location.reload()" style="background:#333; box-shadow:none;">Logout Account</button>
+        </div>
+
+        <div id="details" class="page">
+            <span class="back-btn" onclick="showPage('home')" style="cursor:pointer; color:var(--primary); font-weight:bold;"><i class="fa-solid fa-arrow-left"></i> Back to Store</span>
+            <h2 id="page-title" style="margin-bottom: 25px; margin-top:15px;">Services</h2>
+            <div id="list-items"></div>
+        </div>
+
+        <div class="modal-overlay" id="orderModal">
+            <div class="modal-box">
+                <h3 id="modal-title">Place Order</h3>
+                <input type="text" class="premium-input" id="orderLink" placeholder="Target Profile/Video Link Here...">
+                <input type="number" class="premium-input" id="orderQty" placeholder="Quantity (e.g. 1000)">
+                <button class="confirm-btn" id="modal-submit-btn">PLACE ORDER NOW</button>
+                <p style="text-align:center; color:#555; margin-top:15px; font-size:13px; cursor:pointer;" onclick="closeModal()">Maybe Later</p>
+            </div>
+        </div>
+
+        <div class="live-ticker" id="ticker"><div class="dot"></div><span>User #5122 just added ৳৫০০!</span></div>
+
+        <nav class="navbar">
+            <a href="#" class="nav-item active" onclick="showPage('home')"><i class="fa-solid fa-house"></i><span>Home</span></a>
+            <a href="#" class="nav-item" onclick="showPage('wallet')"><i class="fa-solid fa-wallet"></i><span>Wallet</span></a>
+            <a href="#" class="nav-item" onclick="showPage('history')"><i class="fa-solid fa-bolt"></i><span>Orders</span></a>
+            <a href="#" class="nav-item" onclick="showPage('user_profile')"><i class="fa-solid fa-user"></i><span>Profile</span></a>
+        </nav>
+    </div>
+
+    <script>
+        // 🛑 --- TELEGRAM CONFIGURATION FIXED --- 🛑
+        const TELEGRAM_BOT_TOKEN = '8670502699:AAHIovW4j-YJ2qsqJUNPC4OQA_FPQA580Vo';
+        const TELEGRAM_CHAT_ID = '8507309871';
+
+        let currentLoggedUser = "Guest";
+        let userBalance = 0;
+        let orderCount = 100;
+
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const loader = document.getElementById('loading-screen');
+                loader.style.opacity = '0';
+                setTimeout(() => { loader.style.display = 'none'; }, 600);
+            }, 2000);
+        });
+
+        function updateBalanceDisplay() {
+            document.getElementById('user-balance-chip').innerText = `৳ ${userBalance.toFixed(2)}`;
+            document.getElementById('user-balance-card').innerText = `৳ ${userBalance.toFixed(2)}`;
+            document.getElementById('user-balance-wallet').innerText = `৳ ${userBalance.toFixed(2)}`;
+        }
+
+        function toggleAuth(type) {
+            document.getElementById('login-form').style.display = type === 'login' ? 'block' : 'none';
+            document.getElementById('signup-form').style.display = type === 'signup' ? 'block' : 'none';
+        }
+
+        function handleAuth() {
+            const userField = document.getElementById('login-username').value;
+            currentLoggedUser = userField ? userField.trim() : "JNS_User";
+            document.getElementById('profile-username').innerText = currentLoggedUser;
+            document.getElementById('auth-container').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            updateBalanceDisplay();
+            startBalanceListener();
+        }
+
+        const services = {
+            'fb': { n: 'Facebook Services', items: [{n:'1K Page Likes', p:'৳৪৫০'}, {n:'1K Followers', p:'৳৫০০'}] },
+            'yt': { n: 'YouTube Services', items: [{n:'1K Real Subs', p:'৳৯৫০'}, {n:'4K Watchtime', p:'৳১৮০০'}] },
+            'tk': { n: 'TikTok Services', items: [{n:'1K Followers', p:'৳৩০০'}] },
+            'cv': { n: 'Premium Accounts', items: [{n:'Canva Pro Lifetime', p:'৳১০০'}] },
+            'ig': { n: 'Instagram Services', items: [{n:'1K Followers', p:'৳৪৫০'}] },
+            'tg': { n: 'Telegram Services', items: [{n:'1K Members', p:'৳৩৫০'}] },
+            'nf': { n: 'Netflix Premium', items: [{n:'Netflix 1 Screen', p:'৳১২০'}] },
+            'sp': { n: 'Spotify Premium', items: [{n:'1 Month Individual', p:'৳৮০'}] },
+            'th': { n: 'Threads Services', items: [{n:'1K Threads Followers', p:'৳ २००'}] },
+            'gm': { n: 'Gmail Accounts', items: [{n:'10 Fresh Gmail', p:'৳১৫০'}] },
+            'vp': { n: 'VPN Premium', items: [{n:'NordVPN 1 Month', p:'৳৯৯'}] },
+            'ed': { n: 'Edu Mail Services', items: [{n:'Fresh Edu Mail', p:'৳১২০'}] }
+        };
+
+        function showPage(id) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(l => l.classList.remove('active'));
+            const navIndex = { 'home': 0, 'wallet': 1, 'history': 2, 'user_profile': 3 };
+            if(navIndex[id] !== undefined) document.querySelectorAll('.nav-item')[navIndex[id]].classList.add('active');
+        }
+
+        function openDetails(id) {
+            const data = services[id];
+            document.getElementById('page-title').innerText = data.n;
+            const container = document.getElementById('list-items');
+            container.innerHTML = '';
+            data.items.forEach(i => {
+                container.innerHTML += `<div class="list-item">
+                    <div><b>${i.n}</b></div>
+                    <div style="text-align:right"><b>${i.p}</b><br><button class="buy-btn" onclick="openOrderModal('${i.n}', '${i.p}')">BUY</button></div>
+                </div>`;
+            });
+            showPage('details');
+        }
+
+        function copyText(text) {
+            navigator.clipboard.writeText(text);
+            alert('Copied: ' + text);
+        }
+
+        let selectedService = "";
+        let selectedPrice = "";
+
+        function openOrderModal(title, price) {
+            selectedService = title;
+            selectedPrice = price;
+            document.getElementById('modal-title').innerText = title + " (" + price + ")";
+            document.getElementById('orderModal').style.display = 'flex';
+            document.getElementById('modal-submit-btn').setAttribute('onclick', `submitOrder()`);
+        }
+
+        function closeModal() { document.getElementById('orderModal').style.display = 'none'; }
+
+        function sendToTelegram(message, replyMarkup = null) {
+            let url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+            let payload = { chat_id: TELEGRAM_CHAT_ID, text: message };
+            if(replyMarkup) payload.reply_markup = replyMarkup;
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            }).catch(err => console.error("Telegram Send Error:", err));
+        }
+
+        function banglaToEnglishNumber(str) {
+            const banglaDigits = {'০':'0','১':'1','২':'2','৩':'3','৪':'4','৫':'5','৬':'6','৭':'7','৮':'8','৯':'9'};
+            return str.replace(/[০-৯]/g, function(w) { return banglaDigits[w]; });
+        }
+
+        function submitOrder() {
+            const link = document.getElementById('orderLink').value;
+            const qty = document.getElementById('orderQty').value;
+            if(!link || !qty) return alert('লিঙ্ক এবং পরিমাণ দিন!');
+
+            const englishPriceStr = banglaToEnglishNumber(selectedPrice);
+            const priceNum = parseFloat(englishPriceStr.replace(/[^0-9]/g, ''));
+
+            if(userBalance < priceNum) {
+                return alert('আপনার অ্যাকাউন্টে পর্যাপ্ত ব্যালেন্স নেই! দয়া করে আগে টাকা অ্যাড করুন।');
+            }
+
+            orderCount++;
+            const currentOrderId = `JNS${orderCount}`;
+
+            const historyList = document.getElementById('order-history-list');
+            const newOrderHTML = `
+                <div class="list-item" id="order-card-${currentOrderId}">
+                    <div><b>${selectedService}</b><div style="font-size:11px; color:#666">ID: #${currentOrderId} | ${selectedPrice}</div></div>
+                    <span class="status-text" style="color:orange; font-size:12px; font-weight:800;">Processing</span>
+                </div>
+            `;
+            historyList.insertAdjacentHTML('afterbegin', newOrderHTML);
+
+            const inlineKeyboard = {
+                inline_keyboard: [
+                    [
+                        { text: "✅ Confirm Order", callback_data: `orderconfirm_${currentLoggedUser}_${priceNum}_${currentOrderId}` },
+                        { text: "❌ Reject Order", callback_data: `orderreject_${currentLoggedUser}_${currentOrderId}` }
+                    ]
+                ]
+            };
+
+            const tgMessage = `🛒 নতুন অর্ডার এসেছে!\n\n👤 ইউজার: ${currentLoggedUser}\n🆔 অর্ডার আইডি: #${currentOrderId}\n📦 সার্ভিস: ${selectedService}\n🔢 পরিমাণ: ${qty}\n🔗 লিঙ্ক: ${link}\n💰 প্রাইস: ${selectedPrice}\n\nকাজ শুরু করতে এবং টাকা কাটতে নিচের Confirm-এ চাপুন।`;
+            sendToTelegram(tgMessage, inlineKeyboard);
+
+            alert('আপনার অর্ডারটি পর্যালোচনার জন্য পাঠানো হয়েছে! অ্যাডমিন কনফার্ম করলে কাজ শুরু হবে।');
+            closeModal();
+            document.getElementById('orderLink').value = "";
+            document.getElementById('orderQty').value = "";
+        }
+
+        function submitDeposit() {
+            const method = document.getElementById('deposit-method').value;
+            const amount = document.getElementById('deposit-amount').value;
+            const trx = document.getElementById('deposit-trx').value;
+
+            if(!method) return alert('পেমেন্ট মেথড সিলেক্ট করুন!');
+            if(!amount || !trx) return alert('টাকা এবং Transaction ID দিন!');
+
+            const inlineKeyboard = {
+                inline_keyboard: [
+                    [
+                        { text: "✅ Confirm Money", callback_data: `confirmmoney_${currentLoggedUser}_${amount}` },
+                        { text: "❌ Reject Money", callback_data: `rejectmoney_${currentLoggedUser}` }
+                    ]
+                ]
+            };
+
+            const tgMessage = `💰 নতুন পেমেন্ট রিকোয়েস্ট!\n\n👤 ইউজার: ${currentLoggedUser}\n🏦 মেথড: ${method}\n💵 পরিমাণ: ৳${amount}\n🔑 TrxID: ${trx}\n\nটাকা পেয়ে থাকলে নিচের Confirm বাটনে চাপুন।`;
+            sendToTelegram(tgMessage, inlineKeyboard);
+
+            alert('আপনার রিকোয়েস্ট পাঠানো হয়েছে! অ্যাডমিন ভেরিফাই করলে টাকা অ্যাড হবে।');
+            document.getElementById('deposit-amount').value = "";
+            document.getElementById('deposit-trx').value = "";
+        }
+
+        // --- 📡 টেলিগ্রাম রিয়েলটাইম লিসেনার (লাইভ জ্যাম ও কনফ্লিক্ট প্রুফ লকিং সিস্টেম) ---
+        let lastUpdateId = 0;
+        let isFetching = false; // একাধিক রিকোয়েস্ট এক্সেস বন্ধ করার লক মেকানিজম
+
+        function startBalanceListener() {
+            setInterval(() => {
+                if (isFetching) return; // রিকোয়েস্ট অলরেডি চললে পরের লুপ স্কিপ করবে (Conflict 409 ফিক্স)
+                
+                isFetching = true;
+                let url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?timeout=1`;
+                if (lastUpdateId > 0) {
+                    url += `&offset=${lastUpdateId + 1}`;
+                }
+
+                fetch(url)
+                .then(res => res.json())
+                .then(data => {
+                    isFetching = false; // ডেটা আসার পর লক রিলিজ
+                    
+                    if(data.ok && data.result.length > 0) {
+                        data.result.forEach(update => {
+                            lastUpdateId = update.update_id; 
+                            
+                            if(update.callback_query) {
+                                const callbackData = update.callback_query.data;
+                                const callbackQueryId = update.callback_query.id;
+                                const parts = callbackData.split('_');
+                                const actionType = parts[0];
+                                const targetUser = parts[1];
+
+                                answerTelegramCallback(callbackQueryId, "Processing Request...");
+
+                                // ইউজার ভেরিফিকেশন কেস-সেন্সিটিভ ফিক্স
+                                if(currentLoggedUser.trim().toLowerCase() === targetUser.trim().toLowerCase()) {
+                                    
+                                    // --- 💰 টাকা অ্যাডের লজিক ---
+                                    if(actionType === 'confirmmoney') {
+                                        const addAmount = parseFloat(parts[2]);
+                                        userBalance += addAmount;
+                                        alert(`🎉 অভিনন্দন! অ্যাডমিন আপনার ৳${addAmount} এর পেমেন্ট কনফার্ম করেছে।`);
+                                    } 
+                                    else if(actionType === 'rejectmoney') {
+                                        alert("❌ আপনার পেমেন্ট রিকোয়েস্টটি বাতিল করা হয়েছে। সঠিক তথ্য দিয়ে আবার চেষ্টা করুন।");
+                                    }
+
+                                    // --- 🛒 অর্ডার কনফার্ম ও স্ট্যাটাস চেঞ্জের লজিক ---
+                                    else if(actionType === 'orderconfirm') {
+                                        const orderPrice = parseFloat(parts[2]);
+                                        const orderId = parts[3];
+                                        if(userBalance >= orderPrice) {
+                                            userBalance -= orderPrice;
+                                            const statusSpan = document.querySelector(`#order-card-${orderId} .status-text`);
+                                            if(statusSpan) {
+                                                statusSpan.innerText = "Success";
+                                                statusSpan.style.color = "var(--success)";
+                                            }
+                                            alert(`✅ আপনার অর্ডার (#${orderId}) অ্যাডমিন কনফার্ম করেছে! ব্যালেন্স থেকে ৳${orderPrice} কাটা হয়েছে।`);
+                                        } else {
+                                            alert(`⚠️ অ্যাডমিন অর্ডার কনফার্ম করতে চেয়েছে, কিন্তু আপনার অ্যাকাউন্টে পর্যাপ্ত ব্যালেন্স নেই!`);
+                                        }
+                                    } 
+                                    else if(actionType === 'orderreject') {
+                                        const orderId = parts[2];
+                                        const statusSpan = document.querySelector(`#order-card-${orderId} .status-text`);
+                                        if(statusSpan) {
+                                            statusSpan.innerText = "Rejected";
+                                            statusSpan.style.color = "red";
+                                        }
+                                        alert(`❌ দুঃখিত, আপনার অর্ডার (#${orderId}) অ্যাডমিন বাতিল (Reject) করেছে।`);
+                                    }
+
+                                    updateBalanceDisplay();
+                                }
+                            }
+                        });
+                    }
+                })
+                .catch(err => {
+                    isFetching = false; // এরর আসলেও লক রিলিজ করবে যাতে টাইমার আটকে না যায়
+                    console.log("Syncing...");
+                });
+            }, 2000);
+        }
+
+        function answerTelegramCallback(callbackQueryId, text) {
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/answerCallbackQuery?callback_query_id=${callbackQueryId}&text=${encodeURIComponent(text)}`)
+            .catch(err => console.error("Callback Answer Error:", err));
+        }
+
+        const msgs = ["User #2102 added ৳২০০", "1K FB Followers ordered by #992", "User #4412 added ৳৫০০"];
+        setInterval(() => {
+            const ticker = document.getElementById('ticker');
+            if(ticker) ticker.querySelector('span').innerText = msgs[Math.floor(Math.random() * msgs.length)];
+        }, 5000);
+    </script>
+</body>
+</html>
