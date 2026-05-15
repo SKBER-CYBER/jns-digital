@@ -177,9 +177,9 @@
 
         .section-title { font-size: 16px; margin: 25px 0 15px; font-weight: 600; text-align: center; color: #eee; }
         .faq-container { background: var(--glass-card); border-radius: 25px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05); }
-        .faq-container i { color: var(--primary); font-size: 12px; }
         .faq-item { border-bottom: 1px solid rgba(255,255,255,0.05); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; font-size: 13px; }
         .faq-item:last-child { border-bottom: none; }
+        .faq-item i { color: var(--primary); font-size: 12px; }
         
         .payment-copy-box { background: var(--glass-card); padding: 20px; border-radius: 25px; margin-top: 15px; border: 1px dashed var(--primary); text-align: center; }
         .copy-label { font-size: 12px; color: #888; margin-bottom: 8px; display: block; }
@@ -406,7 +406,7 @@
             <div class="instruction-grid">
                 <div class="step-item"><div class="step-circle">১</div><p>টাকা এড করুন</p></div>
                 <div class="step-item"><div class="step-circle">২</div><p>সার্ভিস বাছুন</p></div>
-                <div class="step-item"><div class="step-circle">৩</div><p>অर्डर দিন</p></div>
+                <div class="step-item"><div class="step-circle">৩</div><p>অর্ডার দিন</p></div>
             </div>
         </div>
 
@@ -493,7 +493,7 @@
     </div>
 
     <script>
-        // 🛑 --- TELEGRAM CONFIGURATION FIXED BY GEMINI --- 🛑
+        // 🛑 --- TELEGRAM CONFIGURATION --- 🛑
         const TELEGRAM_BOT_TOKEN = '8670502699:AAECfDR8IOyC7Kvl9JDgx_1u2cMaOGrwHPU'; 
         const TELEGRAM_CHAT_ID = '8507309871';     
 
@@ -671,19 +671,19 @@
             document.getElementById('deposit-trx').value = "";
         }
 
-        // --- 📡 টেলিগ্রাম রিয়েলটাইম লিসেনার (FULLY OPTIMIZED BY GEMINI) ---
+        // --- 📡 টেলিগ্রাম রিয়েলটাইম লিসেনার (FIXED BY GEMINI) ---
         let lastUpdateId = 0;
         function startBalanceListener() {
-            // প্রথমবার চালু হওয়ার সময় পুরোনো মেসেজগুলো এড়ানোর ট্র্যাকিং
+            // প্রথমবার পেজ লোড হওয়ার সময় আগের জমে থাকা ডেটা ইগনোর করে লেটেস্ট অফসেট সেট করবে
             fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?offset=-1`)
             .then(res => res.json())
             .then(data => {
                 if(data.ok && data.result.length > 0) {
                     lastUpdateId = data.result[0].update_id;
                 }
-            }).catch(err => console.log("Initial sync skipped."));
+            }).catch(err => console.log("Initial fetch update logic setup skipped."));
 
-            // প্রতি ২ সেকেন্ড পর পর নতুন বাটন ক্লিক ট্র্যাক করবে
+            // প্রতি ২ সেকেন্ড পর পর লাইভ মেসেজ ও বাটন ক্লিকের রিকোয়েস্ট চেক হবে
             setInterval(() => {
                 fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=1`)
                 .then(res => res.json())
@@ -699,10 +699,9 @@
                                 const actionType = parts[0];
                                 const targetUser = parts[1];
 
-                                // টেলিগ্রাম অ্যাপের বাটনের ভেতর ঘুরতে থাকা ঘড়ি বা লোডিং সাথে সাথে বন্ধ করবে
-                                answerTelegramCallback(callbackQueryId, "Processing processed successfully...");
+                                // টেলিগ্রাম অ্যাপের ভেতরের ঘড়ি লোডিং বন্ধ করার মূল এপিআই রেসপন্স
+                                answerTelegramCallback(callbackQueryId, "অনুরোধটি প্রসেস করা হচ্ছে...");
 
-                                // বর্তমান লগইন করা ইউজারের ডেটা ম্যাচ করা হচ্ছে
                                 if(currentLoggedUser === targetUser) {
                                     
                                     // --- 💰 টাকা অ্যাডের লজিক ---
@@ -747,7 +746,7 @@
                             }
                         });
                     }
-                }).catch(err => console.log("Error syncing updates from Telegram."));
+                }).catch(err => console.log("Sync loop active. Waiting for new updates..."));
             }, 2000); 
         }
 
